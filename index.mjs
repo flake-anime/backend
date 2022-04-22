@@ -53,12 +53,6 @@ app.get("/get_episodes", async (req, res) => {
     res.json(filtered_result)
 })
 
-app.get("/detail", async (req, res) => {
-    const query = req.query.q
-    const result = await anime.find({$text: {$gogo_id: query}})
-    res.json(result)
-})
-
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
