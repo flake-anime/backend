@@ -11,8 +11,8 @@ mongoose.connect(MONGO_CONNECTION_STRING)
 const app = express()
 
 app.get("/search", async (req, res) => {
-    const q = req.query.q
-    const result = await anime.find({$text: {$search: q}})
+    const query = req.query.q
+    const result = await anime.find({$text: {$search: query}})
     res.json(result)
 })
 
