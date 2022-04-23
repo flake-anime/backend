@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 import "dotenv/config"
 
 const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 4000
 
 mongoose.connect(MONGO_CONNECTION_STRING)
 
@@ -12,6 +12,11 @@ const app = express()
 
 app.get("/search", async (req, res) => {
     const query = req.query.q
+
+    if (!query) {
+        return res.status(400).send("Query is required")
+    }
+
     const result = await anime.find({$text: {$search: query}})
     const filtered_result = result.map(item => {
         return {
@@ -28,6 +33,11 @@ app.get("/search", async (req, res) => {
 app.get("/detail", async (req, res) => {
     const gogo_id = req.query.gogo_id
     const result = await anime.findOne({gogo_id: gogo_id})
+    
+    if (result === null) {
+        return res.status(404).send("Anime not found")
+    }
+
     const filtered_result = {
         _id: result._id,
         anime_name: result.anime_name,
@@ -49,6 +59,11 @@ app.get("/detail", async (req, res) => {
 app.get("/get_episodes", async (req, res) => {
     const gogo_id = req.query.gogo_id
     const result = await anime.findOne({gogo_id: gogo_id})
+
+    if (result === null) {
+        return res.status(404).send("Anime not found")
+    }
+
     const filtered_result = result.episodes
     res.json(filtered_result)
 })
