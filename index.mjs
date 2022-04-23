@@ -25,6 +25,7 @@ app.get("/search", async (req, res) => {
             cover: item.cover,
             type: item.type,
             score: item.score,
+            total_episodes: item.episodes.length
         }
     })
     res.json(filtered_result)
