@@ -32,12 +32,10 @@ app.get("/search", async (req, res) => {
 
 app.get("/detail", async (req, res) => {
     const gogo_id = req.query.gogo_id
-    const result = await anime.findOne({gogo_id: gogo_id})
-    
+    const result = JSON.parse(JSON.stringify(await anime.findOne({gogo_id: gogo_id})))
     if (result === null) {
         return res.status(404).send("Anime not found")
     }
-
     const filtered_result = {
         _id: result._id,
         anime_name: result.anime_name,
