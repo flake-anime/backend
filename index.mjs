@@ -5,34 +5,64 @@ import similarity from "similarity";
 import "dotenv/config";
 
 const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 mongoose.connect(MONGO_CONNECTION_STRING);
 
 const app = express();
 
 app.get("/search", async (req, res) => {
-  const query = req.query.q;
+  const query = req.query.q.replaceAll("-", " ");
+  const regex = new RegExp('^' + query, 'i');
+  let japName = undefined
+  
+//   /^attack on titan/i
 
   if (!query) {
     return res.status(400).send("Query is required");
   }
 
   const result = await anime.find({ $text: { $search: query } });
+  const otherNameResult = await anime.find({ other_name: regex });
+
+  for(let i = 0; i < otherNameResult.length; i++){
+    result.push(otherNameResult[i]);
+
+    if (typeof japName == "undefined"){
+        otherNameResult[i]["other_name"].map((otherName) => {
+            if (otherName.toLowerCase() == query){
+                japName = otherNameResult[i]["anime_name"]
+            }
+        })
+    }
+  }
+
+  console.log(japName);
+
   const filtered_result = result.map((item) => {
     return {
       anime_name: item.anime_name,
-      gogo_id: item.gogo_id,
-      cover: item.cover,
-      type: item.type,
-      score: item.score,
-      total_episodes: item.episodes.length,
+    //   gogo_id: item.gogo_id,
+    //   cover: item.cover,
+    //   type: item.type,
+    //   score: item.score,
+    //   total_episodes: item.episodes.length,
+      other_name: item.other_name
     };
   });
+  
   const sorted_filter_result = filtered_result.sort((a, b) => {
-    const similartyA = similarity(a.anime_name, query);
-    const similartyB = similarity(b.anime_name, query);
-    return similartyB - similartyA;
+    if (typeof japName == "undefined"){
+        let similartyA = similarity(a.anime_name, query, {sensitive: false});
+        let similartyB = similarity(b.anime_name, query, {sensitive: false});
+
+        return similartyB - similartyA;
+    } else {
+        let similartyA = similarity(a.anime_name, japName, {sensitive: false});
+        let similartyB = similarity(b.anime_name, japName, {sensitive: false});
+
+        return similartyB - similartyA;
+    }
   });
 
   res.json(sorted_filter_result);

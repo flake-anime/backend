@@ -14,6 +14,7 @@ const anime_schema = new mongoose.Schema({
     url: { type: String },
     episodes: { type: Array },
 })
+// anime_schema.index({ other_name: "text" })
 anime_schema.index({ anime_name: "text" })
 
 const anime = mongoose.model("anime", anime_schema)
